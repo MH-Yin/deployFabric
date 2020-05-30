@@ -17,6 +17,8 @@ services:
     # for example map it to utilize Fauxton User Interface in dev environments.
     ports:
       - "5984:5984"
+    networks:
+      - testchain
 
   ca:
     container_name: ca
@@ -32,6 +34,8 @@ services:
     command: sh -c 'fabric-ca-server start --ca.certfile /etc/hyperledger/fabric-ca-server-config/ca.org1.example.com-cert.pem --ca.keyfile /etc/hyperledger/fabric-ca-server-config/3afd4217cbbeabe8f6b765bb7f0407d1dc2478f2aa21731b654a0f0489333eea_sk -b admin:adminpw -d'
     volumes:
       - ../crypto-config/peerOrganizations/org1.example.com/ca/:/etc/hyperledger/fabric-ca-server-config
+    networks:
+      - testchain
 
   peer0.org1.example.com:
     container_name: peer0.org1.example.com
@@ -41,7 +45,6 @@ services:
       - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb:5984
 
       - CORE_PEER_ID=peer0.org1.example.com
-      - CORE_PEER_NETWORKID=network001
       - CORE_PEER_ADDRESS=peer0.org1.example.com:7051
       - CORE_PEER_CHAINCODELISTENADDRESS=peer0.org1.example.com:7052
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org1.example.com:7051
@@ -51,10 +54,9 @@ services:
       # the following setting starts chaincode containers on the same
       # bridge network as the peers
       # https://docs.docker.com/compose/networking/
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=network001
       # - CORE_LOGGING_LEVEL=ERROR
       - CORE_LOGGING_LEVEL=DEBUG
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=network001_default
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=compose_testchain
       - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
       - CORE_PEER_GOSSIP_USELEADERELECTION=true
       - CORE_PEER_GOSSIP_ORGLEADER=false
@@ -69,14 +71,14 @@ services:
         - ../crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls:/etc/hyperledger/fabric/tls
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
     command: peer node start
+    networks:
+      - testchain
     ports:
       - 7051:7051
       - 7052:7052
       - 7053:7053
     depends_on:
       - couchdb
-    networks:
-      - testchain
 
   cli:
     container_name: cli
@@ -96,6 +98,8 @@ services:
       - CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt
       - CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    networks:
+      - testchain
     volumes:
         - /var/run/:/host/var/run/
         - ../chaincode/go/:/opt/gopath/src/github.com/hyperledger/fabric/network001/chaincode/go

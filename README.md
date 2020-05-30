@@ -24,9 +24,9 @@
 
 ### 安装智能合约
 
-```peer chaincode install -n mycc -p 合约路径 -v 0```
+```peer chaincode install -n mycc -p github.com/hyperledger/fabric/network001/chaincode/go -v 1.0```
 
 ### 实例化合约
 
-```peer chaincode instantiate -o orderer.example.com:7050 -C mychannel -n mycc -v 0 -c '{"Args":["init","a","100","b","200"]}' -P "OR('Org1MSP.member')"```
+```peer chaincode instantiate -o orderer.example.com:7050 -C mychannel -n mycc -v 1.0 -c '{"Args":["init","a","100","b","200"]}' -P "OR('Org1MSP.member')"```
 
