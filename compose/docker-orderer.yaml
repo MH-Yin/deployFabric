@@ -5,11 +5,14 @@
 
 version: '2'
 
+networks:
+  testchain:
+
 services:
 
   orderer.example.com:
     container_name: orderer.example.com
-    image: hyperledger/fabric-orderer
+    image: hyperledger/fabric-orderer:1.4.3
     environment:
       - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=aberic_default
       # - ORDERER_GENERAL_LOGLEVEL=error
@@ -31,13 +34,11 @@ services:
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric
     command: orderer
     volumes:
-    - ./channel-artifacts/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
-    - ./crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/msp:/var/hyperledger/orderer/msp
-    - ./crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/tls/:/var/hyperledger/orderer/tls
+      - ../channel-artifacts/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
+      - ../crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/msp:/var/hyperledger/orderer/msp
+      - ../crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/tls/:/var/hyperledger/orderer/tls
     networks:
-      default:
-        aliases:
-          - abericzai
+      - testchain
     ports:
       - 7050:7050
 

@@ -5,6 +5,9 @@
 
 version: '2'
 
+networks:
+  testchain:
+
 services:
 
   couchdb:
@@ -17,7 +20,7 @@ services:
 
   ca:
     container_name: ca
-    image: hyperledger/fabric-ca
+    image: hyperledger/fabric-ca:1.4.3
     environment:
       - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
       - FABRIC_CA_SERVER_CA_NAME=ca
@@ -28,11 +31,11 @@ services:
       - "7054:7054"
     command: sh -c 'fabric-ca-server start --ca.certfile /etc/hyperledger/fabric-ca-server-config/ca.org1.example.com-cert.pem --ca.keyfile /etc/hyperledger/fabric-ca-server-config/3afd4217cbbeabe8f6b765bb7f0407d1dc2478f2aa21731b654a0f0489333eea_sk -b admin:adminpw -d'
     volumes:
-      - ./crypto-config/peerOrganizations/org1.example.com/ca/:/etc/hyperledger/fabric-ca-server-config
+      - ../crypto-config/peerOrganizations/org1.example.com/ca/:/etc/hyperledger/fabric-ca-server-config
 
   peer0.org1.example.com:
     container_name: peer0.org1.example.com
-    image: hyperledger/fabric-peer
+    image: hyperledger/fabric-peer:1.4.3
     environment:
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
       - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb:5984
@@ -62,8 +65,8 @@ services:
       - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
     volumes:
         - /var/run/:/host/var/run/
-        - ./crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp:/etc/hyperledger/fabric/msp
-        - ./crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls:/etc/hyperledger/fabric/tls
+        - ../crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp:/etc/hyperledger/fabric/msp
+        - ../crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls:/etc/hyperledger/fabric/tls
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
     command: peer node start
     ports:
@@ -73,13 +76,11 @@ services:
     depends_on:
       - couchdb
     networks:
-      default:
-        aliases:
-          - network001
+      - testchain
 
   cli:
     container_name: cli
-    image: hyperledger/fabric-tools
+    image: hyperledger/fabric-tools:1.4.3
     tty: true
     environment:
       - GOPATH=/opt/gopath
@@ -97,11 +98,9 @@ services:
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
     volumes:
         - /var/run/:/host/var/run/
-        - ./chaincode/go/:/opt/gopath/src/github.com/hyperledger/fabric/network001/chaincode/go
-        - ./crypto-config:/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/
-        - ./channel-artifacts:/opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts
-        - /home/ymh/go/src/github.com/hyperledger/fabric:/opt/gopath/src/github.com/hyperledger/fabric
-        - /home/ymh/go/src:/opt/gopath/src
+        - ../chaincode/go/:/opt/gopath/src/github.com/hyperledger/fabric/network001/chaincode/go
+        - ../crypto-config:/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/
+        - ../channel-artifacts:/opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts
     depends_on:
       - peer0.org1.example.com
 
